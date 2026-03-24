@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/micha/Documents/codebreaker//**)",
+      "Bash(git -C /c/Users/micha/Documents/codebreaker rev-parse --git-dir)"
+    ]
+  }
+}
