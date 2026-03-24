@@ -110,11 +110,13 @@ describe('resetForRematch', () => {
     joinRoom(code, 's2', 'Bob');
     setCode(code, ['R','G','B','Y','O']);
     addGuess(code, { colors: ['R','R','R','R','R'], exactHits: 1, colorHits: 0 });
+    setRematchVote(code, 's1', true);   // add a vote so there's something to clear
     resetForRematch(code, 's2');
     const room = getRoom(code);
     expect(room.guesses).toHaveLength(0);
     expect(room.secretCode).toBeNull();
     expect(room.eligiblePickerId).toBe('s2');
     expect(room.status).toBe('waiting');
+    expect(room.rematchVotes).toEqual({});  // add this assertion
   });
 });
