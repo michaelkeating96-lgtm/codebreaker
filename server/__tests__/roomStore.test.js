@@ -118,7 +118,7 @@ describe('resetForRematch', () => {
     expect(room.eligiblePickerId).toBe('s2');
     expect(room.status).toBe('waiting');
     expect(room.lastWinnerId).toBe('s2');
-    expect(room.rematchVotes).toEqual({});  // add this assertion
+    expect(room.rematchVotes).toEqual({});
   });
 });
 
