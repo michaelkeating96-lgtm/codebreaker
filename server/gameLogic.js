@@ -1,10 +1,12 @@
+// Pure game scoring logic. No I/O or side effects. Consumed by socket handlers in socketHandlers.js.
 const COLORS = ['R', 'G', 'B', 'Y', 'O', 'P'];
 const CODE_LENGTH = 5;
 
 /**
  * Evaluate a guess against the secret code.
- * @param {string[]} secret - 5-element array of color codes
- * @param {string[]} guess  - 5-element array of color codes
+ * Precondition: both `secret` and `guess` must be valid codes (call `isValidCode` first).
+ * @param {string[]} secret - 5-element array of valid color codes
+ * @param {string[]} guess  - 5-element array of valid color codes
  * @returns {{ exactHits: number, colorHits: number }}
  */
 function evaluateGuess(secret, guess) {

@@ -1,4 +1,4 @@
-const { evaluateGuess } = require('../gameLogic');
+const { evaluateGuess, isWin, isValidCode } = require('../gameLogic');
 
 describe('evaluateGuess', () => {
   test('all exact hits', () => {
@@ -35,5 +35,53 @@ describe('evaluateGuess', () => {
     // No R in remaining secret pool → colorHits: 0
     const result = evaluateGuess(['R','G','B','Y','O'], ['R','R','R','R','R']);
     expect(result).toEqual({ exactHits: 1, colorHits: 0 });
+  });
+});
+
+describe('isWin', () => {
+  test('returns true when exactHits equals CODE_LENGTH (5)', () => {
+    expect(isWin(5)).toBe(true);
+  });
+
+  test('returns false for 4 exact hits', () => {
+    expect(isWin(4)).toBe(false);
+  });
+
+  test('returns false for 0 exact hits', () => {
+    expect(isWin(0)).toBe(false);
+  });
+});
+
+describe('isValidCode', () => {
+  test('returns true for a valid 5-color code', () => {
+    expect(isValidCode(['R', 'G', 'B', 'Y', 'O'])).toBe(true);
+  });
+
+  test('returns true when duplicates are present', () => {
+    expect(isValidCode(['R', 'R', 'R', 'R', 'R'])).toBe(true);
+  });
+
+  test('returns false for array shorter than 5', () => {
+    expect(isValidCode(['R', 'G', 'B'])).toBe(false);
+  });
+
+  test('returns false for array longer than 5', () => {
+    expect(isValidCode(['R', 'G', 'B', 'Y', 'O', 'P'])).toBe(false);
+  });
+
+  test('returns false when a color is not in COLORS', () => {
+    expect(isValidCode(['R', 'G', 'B', 'Y', 'X'])).toBe(false);
+  });
+
+  test('returns false for null', () => {
+    expect(isValidCode(null)).toBe(false);
+  });
+
+  test('returns false for a string', () => {
+    expect(isValidCode('RGBYO')).toBe(false);
+  });
+
+  test('returns false for empty array', () => {
+    expect(isValidCode([])).toBe(false);
   });
 });
