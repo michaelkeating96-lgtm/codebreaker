@@ -1,6 +1,6 @@
 const {
-  createRoom, getRoom, joinRoom, removePlayer,
-  setCode, addGuess, setRematchVote, resetForRematch, clearRoom
+  createRoom, getRoom, getRoomBySocket, joinRoom, removePlayer,
+  setCode, addGuess, assignRoles, setRematchVote, resetForRematch, clearRoom
 } = require('../roomStore');
 
 beforeEach(() => clearRoom());
@@ -118,5 +118,45 @@ describe('resetForRematch', () => {
     expect(room.eligiblePickerId).toBe('s2');
     expect(room.status).toBe('waiting');
     expect(room.rematchVotes).toEqual({});  // add this assertion
+  });
+});
+
+describe('assignRoles', () => {
+  test('assigns picker role and complementary role to other player', () => {
+    const { code } = createRoom('s1', 'Alice');
+    joinRoom(code, 's2', 'Bob');
+    assignRoles(code, 's1', 'setter');
+    const room = getRoom(code);
+    const alice = room.players.find(p => p.id === 's1');
+    const bob = room.players.find(p => p.id === 's2');
+    expect(alice.role).toBe('setter');
+    expect(bob.role).toBe('guesser');
+  });
+
+  test('nulls eligiblePickerId after roles are assigned', () => {
+    const { code } = createRoom('s1', 'Alice');
+    joinRoom(code, 's2', 'Bob');
+    assignRoles(code, 's1', 'guesser');
+    expect(getRoom(code).eligiblePickerId).toBeNull();
+  });
+
+  test('sets room status to "setting"', () => {
+    const { code } = createRoom('s1', 'Alice');
+    joinRoom(code, 's2', 'Bob');
+    assignRoles(code, 's1', 'setter');
+    expect(getRoom(code).status).toBe('setting');
+  });
+});
+
+describe('getRoomBySocket', () => {
+  test('returns the room for a connected socket', () => {
+    const { code } = createRoom('socket1', 'Alice');
+    const room = getRoomBySocket('socket1');
+    expect(room).toBeDefined();
+    expect(room.code).toBe(code);
+  });
+
+  test('returns undefined for an unknown socket', () => {
+    expect(getRoomBySocket('unknown-socket')).toBeUndefined();
   });
 });

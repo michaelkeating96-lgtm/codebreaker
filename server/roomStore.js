@@ -101,7 +101,7 @@ function resetForRematch(code, winnerId) {
   room.rematchVotes = {};
   room.status = 'waiting';
   room.eligiblePickerId = winnerId;
-  room.lastWinnerId = null;
+  room.lastWinnerId = winnerId;
   room.players.forEach(p => { p.role = null; });
 }
 
