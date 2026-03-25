@@ -229,6 +229,14 @@ describe('decline_rematch', () => {
     bob.emit('join_room', { code, name: 'Bob' });
     await bobJoined;
 
+    // Advance room to 'finished' status so the status guard passes
+    alice.emit('pick_role', { role: 'setter' });
+    await waitFor(alice, 'roles_assigned');
+    alice.emit('set_code', { code: ['R','G','B','Y','O'] });
+    await waitFor(bob, 'code_set');
+    bob.emit('submit_guess', { guess: ['R','G','B','Y','O'], guessIndex: 0 });
+    await waitFor(bob, 'game_over');
+
     const aliceDeclined = waitFor(alice, 'rematch_declined');
     const bobDeclined = waitFor(bob, 'rematch_declined');
     alice.emit('decline_rematch');

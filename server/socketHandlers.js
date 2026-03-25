@@ -8,20 +8,26 @@ const { evaluateGuess, isWin, isValidCode } = require('./gameLogic');
 
 function registerHandlers(io, socket) {
   socket.on('create_room', ({ name }) => {
-    const { code } = createRoom(socket.id, name);
+    if (!name || typeof name !== 'string' || !name.trim()) return;
+    const safeName = name.trim().slice(0, 30);
+    const { code } = createRoom(socket.id, safeName);
     socket.join(code);
     socket.emit('room_created', { code });
   });
 
   socket.on('join_room', ({ code, name }) => {
-    const result = joinRoom(code, socket.id, name);
+    if (!name || typeof name !== 'string' || !name.trim()) return;
+    if (!code || typeof code !== 'string') return;
+    const safeName = name.trim().slice(0, 30);
+    const safeCode = code.trim().toUpperCase().slice(0, 6);
+    const result = joinRoom(safeCode, socket.id, safeName);
     if (result.error) {
       socket.emit('join_error', { reason: result.error });
       return;
     }
-    socket.join(code);
+    socket.join(safeCode);
     const room = result.room;
-    io.to(code).emit('room_joined', {
+    io.to(safeCode).emit('room_joined', {
       players: room.players.map(p => ({ id: p.id, name: p.name })),
       eligiblePickerId: room.eligiblePickerId, // tells clients who may pick roles
     });
@@ -39,7 +45,7 @@ function registerHandlers(io, socket) {
 
   socket.on('set_code', ({ code: secretCode }) => {
     const room = getRoomBySocket(socket.id);
-    if (!room || room.secretCode) return; // ignore if already set
+    if (!room || room.status !== 'setting') return;
     const player = room.players.find(p => p.id === socket.id);
     if (!player || player.role !== 'setter') return; // only setter may set the code
     if (!isValidCode(secretCode)) return;
@@ -113,7 +119,7 @@ function registerHandlers(io, socket) {
 
   socket.on('decline_rematch', () => {
     const room = getRoomBySocket(socket.id);
-    if (!room) return;
+    if (!room || room.status !== 'finished') return;
     // Notify both players — each client calls goHome() on receiving this
     io.to(room.code).emit('rematch_declined');
   });
