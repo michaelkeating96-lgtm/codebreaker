@@ -189,6 +189,35 @@ describe('duplicate submit_guess guard', () => {
   });
 });
 
+describe('set_code — authorization', () => {
+  test('guesser cannot set the code', async () => {
+    const alice = await connectClient();
+    const bob = await connectClient();
+
+    alice.emit('create_room', { name: 'Alice' });
+    const { code } = await waitFor(alice, 'room_created');
+    const bobJoined = waitFor(bob, 'room_joined');
+    bob.emit('join_room', { code, name: 'Bob' });
+    await bobJoined;
+
+    // Alice picks setter, making Bob the guesser
+    alice.emit('pick_role', { role: 'setter' });
+    await waitFor(alice, 'roles_assigned');
+
+    // Bob (the guesser) tries to set the code — should be silently ignored
+    bob.emit('set_code', { code: ['R','G','B','Y','O'] });
+
+    const result = await Promise.race([
+      waitFor(bob, 'code_set').then(() => 'code_set'),
+      new Promise(resolve => setTimeout(() => resolve('timeout'), 300)),
+    ]);
+    expect(result).toBe('timeout');
+
+    alice.disconnect();
+    bob.disconnect();
+  });
+});
+
 describe('decline_rematch', () => {
   test('emits rematch_declined to both players when one declines', async () => {
     const alice = await connectClient();

@@ -8,7 +8,7 @@ const { evaluateGuess, isWin, isValidCode } = require('./gameLogic');
 
 function registerHandlers(io, socket) {
   socket.on('create_room', ({ name }) => {
-    const { code, room } = createRoom(socket.id, name);
+    const { code } = createRoom(socket.id, name);
     socket.join(code);
     socket.emit('room_created', { code });
   });
@@ -40,6 +40,8 @@ function registerHandlers(io, socket) {
   socket.on('set_code', ({ code: secretCode }) => {
     const room = getRoomBySocket(socket.id);
     if (!room || room.secretCode) return; // ignore if already set
+    const player = room.players.find(p => p.id === socket.id);
+    if (!player || player.role !== 'setter') return; // only setter may set the code
     if (!isValidCode(secretCode)) return;
     setCode(room.code, secretCode);
     // Only notify the guesser — don't reveal the code to them, just signal "ready to guess"
